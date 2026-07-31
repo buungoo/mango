@@ -83,6 +83,7 @@ typedef struct {
 	int32_t allow_shortcuts_inhibit;
 	int32_t ignore_maximize;
 	int32_t ignore_minimize;
+	int32_t ignore_fullscreen;
 	int32_t isnosizehint;
 	int32_t idleinhibit_when_focus;
 	int32_t vrr_only_fullscreen;
@@ -2418,6 +2419,7 @@ bool parse_option(Config *config, char *key, char *value) {
 		rule->allow_shortcuts_inhibit = -1;
 		rule->ignore_maximize = -1;
 		rule->ignore_minimize = -1;
+		rule->ignore_fullscreen = -1;
 		rule->isnosizehint = -1;
 		rule->idleinhibit_when_focus = -1;
 		rule->vrr_only_fullscreen = -1;
@@ -2531,6 +2533,8 @@ bool parse_option(Config *config, char *key, char *value) {
 					rule->ignore_maximize = atoi(val);
 				} else if (strcmp(key, "ignore_minimize") == 0) {
 					rule->ignore_minimize = atoi(val);
+				} else if (strcmp(key, "ignore_fullscreen") == 0) {
+					rule->ignore_fullscreen = atoi(val);
 				} else if (strcmp(key, "isnosizehint") == 0) {
 					rule->isnosizehint = atoi(val);
 				} else if (strcmp(key, "idleinhibit_when_focus") == 0) {

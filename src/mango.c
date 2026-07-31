@@ -376,8 +376,8 @@ struct Client {
 	struct wlr_foreign_toplevel_handle_v1 *foreign_toplevel;
 	int32_t isfloating, isurgent, isfullscreen, isfakefullscreen,
 		need_float_size_reduce, isminimized, isoverlay, isnosizehint,
-		ignore_maximize, ignore_minimize, idleinhibit_when_focus,
-		vrr_only_fullscreen;
+		ignore_maximize, ignore_minimize, ignore_fullscreen,
+		idleinhibit_when_focus, vrr_only_fullscreen;
 	int32_t ismaximizescreen;
 	int32_t overview_backup_bw;
 	int32_t fullscreen_backup_x, fullscreen_backup_y, fullscreen_backup_w,
@@ -1604,6 +1604,7 @@ static void apply_rule_properties(Client *c, const ConfigWinRule *r) {
 	APPLY_INT_PROP(c, r, shield_when_capture);
 	APPLY_INT_PROP(c, r, ignore_maximize);
 	APPLY_INT_PROP(c, r, ignore_minimize);
+	APPLY_INT_PROP(c, r, ignore_fullscreen);
 	APPLY_INT_PROP(c, r, isnosizehint);
 	APPLY_INT_PROP(c, r, idleinhibit_when_focus);
 	APPLY_INT_PROP(c, r, vrr_only_fullscreen);
@@ -1819,7 +1820,8 @@ void applyrules(Client *c) {
 	}
 
 	int32_t fullscreen_state_backup =
-		c->isfullscreen || client_wants_fullscreen(c);
+		c->isfullscreen ||
+		(!c->ignore_fullscreen && client_wants_fullscreen(c));
 
 	bool should_init_get_focus =
 		!c->isopensilent &&
@@ -4192,6 +4194,14 @@ fullscreennotify(struct wl_listener *listener, void *data) {
 	if (!c || c->iskilling)
 		return;
 
+	if (c->ignore_fullscreen) {
+		if (c->isfullscreen)
+			client_set_fullscreen(c, 1);
+		else
+			setfakefullscreen(c, client_wants_fullscreen(c));
+		return;
+	}
+
 	setfullscreen(c, client_wants_fullscreen(c), true);
 }
 
@@ -4676,6 +4686,7 @@ void init_client_properties(Client *c) {
 	c->isnoshadow = 0;
 	c->ignore_maximize = 1;
 	c->ignore_minimize = 1;
+	c->ignore_fullscreen = 0;
 	c->iscustomsize = 0;
 	c->iscustompos = 0;
 	c->iscustom_scroller_proportion = 0;
